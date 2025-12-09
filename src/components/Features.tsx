@@ -88,10 +88,10 @@ export const Features = () => {
                                     <CardItem
                                         translateZ={40}
                                         as="a"
-                                        href="https://wa.me/+244945625060"
+                                        href="/criar-curriculo"
                                         className="px-4 py-2 rounded-lg bg-white text-dark text-xs font-bold hover:bg-white/90"
                                     >
-                                        Solicitar
+                                        Começar
                                     </CardItem>
                                 </div>
                             </CardBody>

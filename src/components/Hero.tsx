@@ -39,7 +39,7 @@ export const Hero = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                             <a
-                                href="https://wa.me/+244945625060?text=Ol%C3%A1!%20Gostaria%20de%20criar%20o%20meu%20curr%C3%ADculo%20profissional%20com%20a%20AngoHire."
+                                href="/criar-curriculo"
                                 className="inline-flex items-center justify-center px-6 py-4 text-base font-bold text-dark bg-primary rounded-lg hover:bg-primary-300 transition-colors group shadow-lg shadow-primary/20 w-full sm:w-auto whitespace-normal text-center"
                             >
                                 Criar Meu Currículo Agora

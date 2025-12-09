@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+.DS_Store
+*.pdf
+
+# Sensitive configuration files with API keys
+src/config/temp-config.ts

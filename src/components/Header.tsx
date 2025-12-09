@@ -55,7 +55,7 @@ export const Header = () => {
                             </a>
                         ))}
                         <a
-                            href="https://wa.me/+244945625060?text=Ol%C3%A1!%20Gostaria%20de%20criar%20o%20meu%20curr%C3%ADculo%20profissional%20com%20a%20AngoHire."
+                            href="/criar-curriculo"
                             className="bg-primary text-dark px-6 py-2 rounded-full font-bold text-sm hover:bg-primary-300 transition-transform transform hover:scale-105"
                         >
                             Começar Agora
@@ -93,7 +93,7 @@ export const Header = () => {
                         ))}
                         <div className="pt-4">
                             <a
-                                href="https://wa.me/+244945625060?text=Ol%C3%A1!%20Gostaria%20de%20criar%20o%20meu%20curr%C3%ADculo%20profissional%20com%20a%20AngoHire."
+                                href="/criar-curriculo"
                                 className="block w-full text-center bg-primary text-dark px-6 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 active:scale-95 transition-transform"
                                 onClick={() => setIsOpen(false)}
                             >

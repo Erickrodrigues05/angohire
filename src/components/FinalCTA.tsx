@@ -27,11 +27,11 @@ export const FinalCTA = () => {
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <a
-                            href="https://wa.me/+244945625060?text=Ol%C3%A1!%20Estou%20pronto%20para%20transformar%20a%20minha%20carreira.%20Gostaria%20de%20saber%20mais."
+                            href="/criar-curriculo"
                             className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-dark bg-primary rounded-xl hover:bg-primary-300 transition-all hover:scale-105 shadow-lg shadow-primary/25"
                         >
                             <MessageCircle className="mr-2 w-5 h-5" />
-                            Solicitar no WhatsApp
+                            Começar Agora
                         </a>
                     </div>
 

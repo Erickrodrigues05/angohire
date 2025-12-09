@@ -153,7 +153,7 @@ export const Pricing = () => {
                                     <CardItem
                                         translateZ={20}
                                         as="a"
-                                        href={plan.isComingSoon ? "#" : `https://wa.me/+244945625060?text=${encodeURIComponent(`Olá! Tenho interesse no ${plan.title}.`)}`}
+                                        href={plan.isComingSoon ? "#" : "/criar-curriculo"}
                                         className={`w-full block text-center py-3 rounded-xl font-bold transition-all ${plan.isComingSoon
                                             ? 'bg-white/5 text-gray-400 cursor-not-allowed'
                                             : plan.popular
