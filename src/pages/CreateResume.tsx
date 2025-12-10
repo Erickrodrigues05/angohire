@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Check, FileText, Briefcase, GraduationCap, Award } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, FileText, Award } from 'lucide-react';
 import { Step3ExperienceForm } from '../components/Step3ExperienceForm';
 import { Step4EducationSkillsForm } from '../components/Step4EducationSkillsForm';
 
@@ -79,7 +79,7 @@ export const CreateResume = () => {
         { category: 'Competências Técnicas', skills: [] }
     ]);
 
-    const [summary, setSummary] = useState('');
+    const [summary] = useState('');
 
     const totalSteps = 5;
 
