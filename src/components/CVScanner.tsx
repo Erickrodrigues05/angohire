@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, AlertCircle, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { Scan, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 export const CVScanner = () => {
     const [text, setText] = useState('');

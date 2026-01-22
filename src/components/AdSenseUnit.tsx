@@ -23,7 +23,7 @@ export const AdSenseUnit = ({ slot, format = 'auto', layoutKey, style, className
         }
     }, []);
 
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
         return (
             <div
                 className={`flex items-center justify-center bg-gray-200 border-2 border-dashed border-gray-400 text-gray-500 text-sm p-4 ${className}`}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Check, FileText, Award } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 import { Step3ExperienceForm } from '../components/Step3ExperienceForm';
 import { Step4EducationSkillsForm } from '../components/Step4EducationSkillsForm';
 

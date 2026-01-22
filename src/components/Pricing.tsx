@@ -18,7 +18,8 @@ export const Pricing = () => {
             ],
             buttonText: "Criar Grátis",
             icon: <FileText className="w-8 h-8 text-gray-400" />,
-            id: "basic"
+            id: "basic",
+            isComingSoon: false
         },
         {
             title: "Currículo Padrão",
@@ -35,7 +36,8 @@ export const Pricing = () => {
             ],
             buttonText: "Escolher Padrão",
             icon: <FileText className="w-8 h-8 text-white" />,
-            id: "standard"
+            id: "standard",
+            isComingSoon: false
         },
         {
             title: "Currículo Profissional",
@@ -52,7 +54,8 @@ export const Pricing = () => {
             ],
             buttonText: "Ser Profissional",
             icon: <CheckCircle2 className="w-8 h-8 text-primary" />,
-            id: "professional"
+            id: "professional",
+            isComingSoon: false
         },
         {
             title: "Carta de Interesse",
@@ -69,7 +72,8 @@ export const Pricing = () => {
             ],
             buttonText: "Pedir Carta",
             icon: <PenTool className="w-8 h-8 text-primary" />,
-            id: "cover-letter"
+            id: "cover-letter",
+            isComingSoon: false
         }
     ];
 
