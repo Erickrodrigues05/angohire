@@ -55,6 +55,14 @@ export const Header = () => {
                             </a>
                         ))}
                         <a
+                            href="https://chat.whatsapp.com/vagas-vip-placeholder" // Replace with real link
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-white transition-colors text-sm font-bold uppercase tracking-wider flex items-center gap-1"
+                        >
+                            Vagas VIP <span className="text-xs bg-primary/20 px-1.5 py-0.5 rounded text-primary border border-primary/20">Novo</span>
+                        </a>
+                        <a
                             href="/criar-curriculo"
                             className="bg-primary text-dark px-6 py-2 rounded-full font-bold text-sm hover:bg-primary-300 transition-transform transform hover:scale-105"
                         >
@@ -91,6 +99,15 @@ export const Header = () => {
                                 {item.name}
                             </a>
                         ))}
+                        <a
+                            href="https://chat.whatsapp.com/vagas-vip-placeholder"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block px-4 py-3 text-lg font-bold text-primary hover:text-white hover:bg-white/5 rounded-lg bg-primary/5 border border-primary/20"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            🚀 Grupo de Vagas VIP
+                        </a>
                         <div className="pt-4">
                             <a
                                 href="/criar-curriculo"

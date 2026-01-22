@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { z } from 'zod';
 import { ResumeDataSchema } from './types/resume.types';
 import { resumeGenerator, TemplateType } from './services/resume-generator';
-import ordersRouter from './routes/orders.js';
+import ordersRouter from './routes/orders';
 
 dotenv.config();
 

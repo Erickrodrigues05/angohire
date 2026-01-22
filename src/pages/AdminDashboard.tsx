@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Clock, FileText, Download, Eye, XCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 interface Order {
     id: string;
@@ -19,14 +20,33 @@ export const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+    // Auth State
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [password, setPassword] = useState('');
+
+    // Check localStorage on mount
+    useEffect(() => {
+        const token = localStorage.getItem('admin_token');
+        if (token) setIsAuthenticated(true);
+    }, []);
+
     // Buscar pedidos
     const fetchOrders = async () => {
+        const token = localStorage.getItem('admin_token');
+        if (!token) return;
+
         try {
-            const response = await fetch('http://localhost:3001/api/orders/list');
+            const response = await fetch(API_ENDPOINTS.ORDERS.LIST, {
+                headers: { 'x-admin-token': token }
+            });
             const data = await response.json();
 
             if (data.success) {
                 setOrders(data.orders);
+            } else if (response.status === 401) {
+                // Token expired/invalid
+                setIsAuthenticated(false);
+                localStorage.removeItem('admin_token');
             }
         } catch (error) {
             console.error('Erro ao buscar pedidos:', error);
@@ -36,11 +56,47 @@ export const AdminDashboard = () => {
     };
 
     useEffect(() => {
-        fetchOrders();
-        // Atualizar a cada 30 segundos
-        const interval = setInterval(fetchOrders, 30000);
-        return () => clearInterval(interval);
-    }, []);
+        if (isAuthenticated) {
+            fetchOrders();
+            // Atualizar a cada 30 segundos
+            const interval = setInterval(fetchOrders, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated]);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Em um app real, faríamos um POST /api/login para validar e pegar token.
+        // Aqui estamos usando o token direto como senha para simplificar a demo.
+        // A segurança real vem do backend validando esse header.
+        localStorage.setItem('admin_token', password);
+        setIsAuthenticated(true);
+    };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-dark flex items-center justify-center p-4">
+                <form onSubmit={handleLogin} className="bg-white/5 border border-white/10 p-8 rounded-2xl w-full max-w-md space-y-6">
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-white mb-2">Admin Login</h1>
+                        <p className="text-gray-400">Senha Padrão: admin123</p>
+                    </div>
+                    <div>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Digite a senha de administrador"
+                            className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary focus:outline-none"
+                        />
+                    </div>
+                    <button type="submit" className="w-full bg-primary text-dark font-bold py-3 rounded-lg hover:bg-primary-300 transition-colors">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+        );
+    }
 
     // Confirmar pagamento
     const [processingId, setProcessingId] = useState<string | null>(null);
@@ -54,8 +110,9 @@ export const AdminDashboard = () => {
         setProcessingId(orderId);
         try {
             console.log(`Iniciando confirmação para pedido ${orderId}...`);
-            const response = await fetch(`http://localhost:3001/api/orders/${orderId}/confirm-payment`, {
+            const response = await fetch(API_ENDPOINTS.ORDERS.CONFIRM_PAYMENT(orderId), {
                 method: 'POST',
+                headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' }
             });
 
             const data = await response.json();

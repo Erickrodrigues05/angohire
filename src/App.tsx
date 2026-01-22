@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
+import { ResumeComparison } from "./components/ResumeComparison";
 import { About } from "./components/About";
 import { WhyUs } from "./components/WhyUs";
 import { Testimonials } from "./components/Testimonials";
@@ -10,18 +11,24 @@ import { Footer } from "./components/Footer";
 import { CreateResume } from "./pages/CreateResume";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { PaymentPage } from "./pages/PaymentPage";
+import { AdSenseUnit } from "./components/AdSenseUnit";
+import { CookieConsent } from "./components/CookieConsent";
 
 function HomePage() {
     return (
         <>
             <Header />
             <Hero />
+            <ResumeComparison />
             <About />
+            <AdSenseUnit slot="4711645784" className="max-w-7xl mx-auto px-4" />
             <WhyUs />
             <Pricing />
+            <AdSenseUnit slot="4711645784" className="max-w-7xl mx-auto px-4" />
             <Testimonials />
             <FinalCTA />
             <Footer />
+            <CookieConsent />
         </>
     );
 }

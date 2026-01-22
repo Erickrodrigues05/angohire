@@ -4,36 +4,55 @@ import { FileText, PenTool, Send, CheckCircle2 } from "lucide-react";
 export const Pricing = () => {
     const plans = [
         {
+            title: "Currículo Básico",
+            price: "Grátis",
+            originalPrice: "2.000 Kz",
+            popular: false,
+            description: "Ideal para quem está a começar e precisa de um currículo simples e funcional.",
+            features: [
+                "Modelo Simples e Limpo",
+                "Estrutura Padrão",
+                "Formato PDF",
+                "Entrega Imediata",
+                "Sem Revisão Gramatical"
+            ],
+            buttonText: "Criar Grátis",
+            icon: <FileText className="w-8 h-8 text-gray-400" />,
+            id: "basic"
+        },
+        {
+            title: "Currículo Padrão",
+            price: "2.790 Kz",
+            originalPrice: "4.000 Kz",
+            popular: true,
+            description: "A escolha equilibrada para quem quer destacar-se com um design melhorado.",
+            features: [
+                "Design Moderno",
+                "Estrutura Otimizada",
+                "Destaque de Competências",
+                "Formato PDF de Alta Qualidade",
+                "Entrega em 24 horas"
+            ],
+            buttonText: "Escolher Padrão",
+            icon: <FileText className="w-8 h-8 text-white" />,
+            id: "standard"
+        },
+        {
             title: "Currículo Profissional",
             price: "5.500 Kz",
             originalPrice: "7.000 Kz",
             popular: false,
-            description: "Criação de um currículo visualmente impactante, adaptado à tua área e objetivo.",
+            description: "O currículo de elite para quem quer garantir as melhores oportunidades.",
             features: [
-                "Design moderno e profissional",
-                "Estrutura otimizada para recrutadores",
-                "Revisão gramatical completa",
-                "Formato PDF de Alta Qualidade",
-                "Entrega em 24-48 horas"
+                "Design Premium Executivo",
+                "Estrutura Otimizada para ATS",
+                "Revisão Gramatical Completa",
+                "Consultoria Rápida de Perfil",
+                "Entrega Prioritária"
             ],
-            buttonText: "Pedir Currículo",
-            icon: <FileText className="w-8 h-8 text-white" />
-        },
-        {
-            title: "Pack Carreira (Combo)",
-            price: "8.000 Kz",
-            originalPrice: "12.000 Kz",
-            popular: true,
-            description: "A escolha inteligente. Currículo + Carta de Apresentação com um desconto exclusivo.",
-            features: [
-                "Tudo do Currículo Profissional",
-                "Carta de Apresentação Personalizada",
-                "Otimização para LinkedIn (Bónus)",
-                "Prioridade na Entrega",
-                "Consultoria Rápida de Perfil"
-            ],
-            buttonText: "Aproveitar Promoção",
-            icon: <CheckCircle2 className="w-8 h-8 text-dark" />
+            buttonText: "Ser Profissional",
+            icon: <CheckCircle2 className="w-8 h-8 text-primary" />,
+            id: "professional"
         },
         {
             title: "Carta de Interesse",
@@ -49,22 +68,8 @@ export const Pricing = () => {
                 "Entrega em 24 horas"
             ],
             buttonText: "Pedir Carta",
-            icon: <PenTool className="w-8 h-8 text-primary" />
-        },
-        {
-            title: "Envio Automático",
-            price: "Brevemente",
-            popular: false,
-            isComingSoon: true,
-            description: "O teu currículo enviado automaticamente para +100 empresas em Angola.",
-            features: [
-                "Base de dados de +100 empresas",
-                "Envio automático personalizado",
-                "Relatório de envios",
-                "Maximiza oportunidades"
-            ],
-            buttonText: "Avise-me quando lançar",
-            icon: <Send className="w-8 h-8 text-primary" />
+            icon: <PenTool className="w-8 h-8 text-primary" />,
+            id: "cover-letter"
         }
     ];
 

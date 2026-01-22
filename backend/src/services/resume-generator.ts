@@ -41,7 +41,7 @@ export class ResumeGenerator {
 
             // Gerar PDF usando renderToStream
             const document = React.createElement(TemplateComponent, { data });
-            const stream = await renderToStream(document);
+            const stream = await renderToStream(document as any);
 
             // Converter stream para buffer
             const chunks: Buffer[] = [];

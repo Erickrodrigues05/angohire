@@ -40,7 +40,7 @@ interface Skills {
 
 export const CreateResume = () => {
     const [currentStep, setCurrentStep] = useState(1);
-    const [selectedPackage, setSelectedPackage] = useState<'professional' | 'combo' | 'cover-letter'>('professional');
+    const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'professional' | 'cover-letter'>('professional');
 
     // Form data
     const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -60,7 +60,7 @@ export const CreateResume = () => {
             startDate: '',
             endDate: '',
             isCurrentJob: false,
-            description: '' // Changed from [''] to ''
+            description: ''
         }
     ]);
 
@@ -85,16 +85,22 @@ export const CreateResume = () => {
 
     const packages = [
         {
-            id: 'professional',
-            title: 'Currículo Profissional',
-            price: '5.500 Kz',
+            id: 'basic',
+            title: 'Currículo Básico',
+            price: 'Grátis',
             icon: <FileText className="w-6 h-6" />
         },
         {
-            id: 'combo',
-            title: 'Pack Carreira (Combo)',
-            price: '8.000 Kz',
+            id: 'standard',
+            title: 'Currículo Padrão',
+            price: '2.790 Kz',
             popular: true,
+            icon: <FileText className="w-6 h-6" />
+        },
+        {
+            id: 'professional',
+            title: 'Currículo Profissional',
+            price: '5.500 Kz',
             icon: <Award className="w-6 h-6" />
         },
         {
@@ -131,7 +137,7 @@ export const CreateResume = () => {
 
         try {
             console.log('📡 Enviando para backend...');
-            const response = await fetch('http://localhost:3001/api/orders/create', {
+            const response = await fetch(API_ENDPOINTS.ORDERS.CREATE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -359,17 +365,34 @@ export const CreateResume = () => {
                             <h2 className="text-3xl font-bold mb-6">Finalizar Pedido</h2>
 
                             <div className="bg-primary/10 border border-primary/30 rounded-xl p-6">
-                                <h3 className="font-bold text-xl mb-4">Instruções de Pagamento</h3>
-                                <div className="space-y-3 text-sm">
-                                    <p>1. Faz transferência bancária para:</p>
-                                    <div className="bg-dark rounded-lg p-4 font-mono">
-                                        <p>IBAN: <span className="text-primary font-bold">005100002786460610174</span></p>
-                                        <p>Titular: Erik Viegas Rodrigues</p>
-                                    </div>
-                                    <p>2. Tira print do comprovante</p>
-                                    <p>3. Envia para nosso WhatsApp: <span className="text-primary font-bold">+244 945 625 060</span></p>
-                                    <p>4. Receberás teu currículo em 24-48h após confirmação!</p>
-                                </div>
+                                {selectedPackage === 'basic' ? (
+                                    <>
+                                        <h3 className="font-bold text-xl mb-4">Confirmar Pedido Gratuito</h3>
+                                        <div className="space-y-3 text-sm">
+                                            <p>O teu Currículo Básico está pronto para ser gerado!</p>
+                                            <p>Ao confirmar:</p>
+                                            <ul className="list-disc list-inside text-gray-300 ml-2 space-y-1">
+                                                <li>O teu CV será gerado em PDF</li>
+                                                <li>Poderás fazer o download imediatamente</li>
+                                                <li>Uma cópia será enviada para o teu email</li>
+                                            </ul>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h3 className="font-bold text-xl mb-4">Instruções de Pagamento</h3>
+                                        <div className="space-y-3 text-sm">
+                                            <p>1. Faz transferência bancária para:</p>
+                                            <div className="bg-dark rounded-lg p-4 font-mono">
+                                                <p>IBAN: <span className="text-primary font-bold">005100002786460610174</span></p>
+                                                <p>Titular: Erik Viegas Rodrigues</p>
+                                            </div>
+                                            <p>2. Tira print do comprovante</p>
+                                            <p>3. Envia para nosso WhatsApp: <span className="text-primary font-bold">+244 945 625 060</span></p>
+                                            <p>4. Receberás teu currículo em 24-48h após confirmação!</p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <div className="flex gap-4">
@@ -385,7 +408,7 @@ export const CreateResume = () => {
                                     className="flex-1 bg-primary text-dark font-bold py-4 rounded-lg hover:bg-primary-300 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <Check className="w-5 h-5" />
-                                    Confirmar Pedido
+                                    {selectedPackage === 'basic' ? 'Gerar Currículo' : 'Confirmar Pedido'}
                                 </button>
                             </div>
                         </motion.div>

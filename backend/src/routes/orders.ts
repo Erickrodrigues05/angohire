@@ -1,15 +1,28 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { supabase } from '../config/supabase.js';
-import { ResumeDataSchema } from '../types/resume.types.js';
 import { resumeGenerator } from '../services/resume-generator.js';
 import { uploadResumePDF } from '../config/supabase.js';
+import { emailService } from '../services/email.service.js';
 
 const router = Router();
 
+// Middleware de Autenticação Admin Simples
+const adminAuth = (req: Request, res: Response, next: NextFunction) => {
+  const adminToken = req.headers['x-admin-token'];
+  // Em produção, isso deve estar no .env
+  const VALID_TOKEN = process.env.ADMIN_TOKEN || 'admin123';
+
+  if (adminToken === VALID_TOKEN) {
+    next();
+  } else {
+    res.status(401).json({ success: false, error: 'Não autorizado' });
+  }
+};
+
 // Schema para criar pedido
 const CreateOrderSchema = z.object({
-  package: z.enum(['professional', 'combo', 'cover-letter']),
+  package: z.enum(['basic', 'standard', 'professional', 'combo', 'cover-letter']),
   template: z.string().default('modern-professional'),
   personalInfo: z.object({
     fullName: z.string(),
@@ -27,10 +40,48 @@ const CreateOrderSchema = z.object({
 
 // Mapeamento de preços
 const packagePrices: Record<string, number> = {
+  'basic': 0,
+  'standard': 2790,
   'professional': 5500,
   'combo': 8000,
   'cover-letter': 3500,
 };
+
+// Função auxiliar para gerar e salvar PDF
+async function generateAndUploadOrderPDF(orderId: string, clientData: any, template: string) {
+  // Sanitizar dados
+  const sanitizeExperience = (exp: any[]) => {
+    if (!Array.isArray(exp)) return [];
+    return exp.map(e => ({
+      ...e,
+      description: Array.isArray(e.description) ? e.description : [(e.description || '').toString()]
+    }));
+  };
+
+  const resumeData = {
+    personalInfo: clientData.personalInfo,
+    summary: clientData.summary || 'Profissional dedicado.',
+    experience: sanitizeExperience(clientData.experience),
+    education: Array.isArray(clientData.education) ? clientData.education : [],
+    skills: Array.isArray(clientData.skills) ? clientData.skills : [],
+  };
+
+  // Gerar
+  const result = await resumeGenerator.generate({
+    data: resumeData as any,
+    template: (template || 'modern-professional') as any,
+  });
+
+  if (!result.success || !result.pdfBuffer) {
+    throw new Error('Falha na geração do PDF: ' + result.error);
+  }
+
+  // Upload
+  const pdfUrl = await uploadResumePDF(orderId, result.pdfBuffer);
+  if (!pdfUrl) throw new Error('Falha no upload do PDF');
+
+  return pdfUrl;
+}
 
 /**
  * POST /api/orders/create
@@ -49,7 +100,11 @@ router.post('/create', async (req: Request, res: Response) => {
     }
 
     const orderData = validation.data;
-    const price = packagePrices[orderData.package];
+    const price = packagePrices[orderData.package] ?? 5500;
+    const isFree = price === 0 || orderData.package === 'basic';
+
+    // Status inicial depende se é grátis
+    const initialStatus = isFree ? 'processing' : 'pending';
 
     // Criar pedido no Supabase
     const { data: order, error } = await supabase
@@ -59,17 +114,50 @@ router.post('/create', async (req: Request, res: Response) => {
         template: orderData.template,
         price: price,
         client_data: orderData,
-        status: 'pending',
+        status: initialStatus,
+        // Se for grátis, já marca como pago agora mesmo
+        paid_at: isFree ? new Date().toISOString() : null
       })
       .select()
       .single();
 
     if (error) throw error;
 
+    // SE FOR GRÁTIS: Gerar PDF Automaticamente AGORA
+    if (isFree) {
+      // Executar em background para não travar a resposta HTTP
+      (async () => {
+        try {
+          console.log(`⚡ Auto-gerando PDF para pedido Grátis ${order.id}`);
+          const pdfUrl = await generateAndUploadOrderPDF(order.id, orderData, orderData.template);
+
+          // Atualizar pedido
+          await supabase.from('orders').update({
+            status: 'completed',
+            pdf_url: pdfUrl,
+            completed_at: new Date().toISOString(),
+            pdf_generated_at: new Date().toISOString()
+          }).eq('id', order.id);
+
+          // Enviar Email
+          await emailService.sendResumeEmail(
+            orderData.personalInfo.email,
+            orderData.personalInfo.fullName,
+            pdfUrl
+          );
+          console.log(`✅ Pedido Grátis ${order.id} concluído com sucesso.`);
+
+        } catch (err) {
+          console.error(`❌ Erro no processamento automático do pedido ${order.id}:`, err);
+        }
+      })();
+    }
+
     res.json({
       success: true,
       orderId: order.id,
-      message: 'Pedido criado com sucesso!',
+      isFree: isFree,
+      message: isFree ? 'O seu currículo está a ser gerado!' : 'Pedido criado! Aguardando pagamento.',
       bankAccount: process.env.BANK_ACCOUNT || '005100002786460610174',
       whatsapp: process.env.ADMIN_WHATSAPP || '+244945625060',
     });
@@ -85,9 +173,9 @@ router.post('/create', async (req: Request, res: Response) => {
 
 /**
  * GET /api/orders/list
- * Lista todos os pedidos (para admin)
+ * Lista todos os pedidos (PROTEGIDO)
  */
-router.get('/list', async (req: Request, res: Response) => {
+router.get('/list', adminAuth, async (req: Request, res: Response) => {
   try {
     const { data: orders, error } = await supabase
       .from('orders')
@@ -112,7 +200,7 @@ router.get('/list', async (req: Request, res: Response) => {
 
 /**
  * GET /api/orders/:id
- * Obter detalhes de um pedido
+ * Obter detalhes de um pedido (Público, mas apenas com ID)
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
@@ -125,33 +213,20 @@ router.get('/:id', async (req: Request, res: Response) => {
       .single();
 
     if (error) throw error;
+    if (!order) return res.status(404).json({ success: false, error: 'Não encontrado' });
 
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        error: 'Pedido não encontrado',
-      });
-    }
-
-    res.json({
-      success: true,
-      order,
-    });
+    res.json({ success: true, order });
 
   } catch (error) {
-    console.error('Erro ao buscar pedido:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao buscar pedido',
-    });
+    res.status(500).json({ success: false, error: 'Erro ao buscar pedido' });
   }
 });
 
 /**
  * POST /api/orders/:id/confirm-payment
- * Confirma pagamento e gera PDF automaticamente
+ * Confirma pagamento e gera PDF (PROTEGIDO)
  */
-router.post('/:id/confirm-payment', async (req: Request, res: Response) => {
+router.post('/:id/confirm-payment', adminAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -162,82 +237,40 @@ router.post('/:id/confirm-payment', async (req: Request, res: Response) => {
       .eq('id', id)
       .single();
 
-    if (fetchError) throw fetchError;
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        error: 'Pedido não encontrado',
-      });
+    if (fetchError || !order) {
+      return res.status(404).json({ success: false, error: 'Pedido não encontrado' });
     }
 
-    // Atualizar status para "paid"
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({
-        status: 'processing',
-        paid_at: new Date().toISOString(),
-      })
-      .eq('id', id);
+    // Atualizar pago
+    await supabase.from('orders').update({
+      status: 'processing',
+      paid_at: new Date().toISOString(),
+    }).eq('id', id);
 
-    if (updateError) throw updateError;
-
-    // Gerar PDF automaticamente
+    // Gerar PDF
     console.log('📄 Gerando PDF para pedido:', id);
+    const pdfUrl = await generateAndUploadOrderPDF(id, order.client_data, order.template);
 
-    const clientData = order.client_data;
-    // Sanitizar dados para evitar falhas no template
-    const sanitizeExperience = (exp: any[]) => {
-      if (!Array.isArray(exp)) return [];
-      return exp.map(e => ({
-        ...e,
-        description: Array.isArray(e.description) ? e.description : [(e.description || '').toString()]
-      }));
-    };
+    // Finalizar
+    await supabase.from('orders').update({
+      status: 'completed',
+      pdf_url: pdfUrl,
+      pdf_generated_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+    }).eq('id', id);
 
-    const resumeData = {
-      personalInfo: clientData.personalInfo,
-      summary: clientData.summary || 'Profissional dedicado e comprometido.',
-      experience: sanitizeExperience(clientData.experience),
-      education: Array.isArray(clientData.education) ? clientData.education : [],
-      skills: Array.isArray(clientData.skills) ? clientData.skills : [],
-    };
-
-    console.log('📝 Dados sanitizados para PDF:', JSON.stringify(resumeData, null, 2));
-
-    const result = await resumeGenerator.generate({
-      data: resumeData as any,
-      template: (order.template || 'modern-professional') as any,
-    });
-
-    if (!result.success || !result.pdfBuffer) {
-      throw new Error('Falha ao gerar PDF');
-    }
-
-    // Upload do PDF para Supabase Storage
-    const pdfUrl = await uploadResumePDF(id, result.pdfBuffer);
-
-    if (!pdfUrl) {
-      throw new Error('Falha ao fazer upload do PDF');
-    }
-
-    // Atualizar pedido com PDF gerado
-    const { error: finalUpdateError } = await supabase
-      .from('orders')
-      .update({
-        status: 'completed',
-        pdf_url: pdfUrl,
-        pdf_generated_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', id);
-
-    if (finalUpdateError) throw finalUpdateError;
+    // Enviar Email
+    const emailSent = await emailService.sendResumeEmail(
+      order.client_data?.personalInfo?.email,
+      order.client_data?.personalInfo?.fullName,
+      pdfUrl
+    );
 
     res.json({
       success: true,
       message: 'Pagamento confirmado e PDF gerado!',
       pdfUrl,
+      emailSent
     });
 
   } catch (error) {
@@ -249,38 +282,18 @@ router.post('/:id/confirm-payment', async (req: Request, res: Response) => {
   }
 });
 
-/**
- * GET /api/orders/:id/download-pdf
- * Download do PDF gerado
- */
+// Download endpoint
 router.get('/:id/download-pdf', async (req: Request, res: Response) => {
+  // ... manter lógica original ou simplificar ...
+  // Como a URL é pública no Supabase, o frontend pode usar o link direto.
+  // Mas mantemos para compatibilidade.
   try {
     const { id } = req.params;
-
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('pdf_url, client_data')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-
-    if (!order || !order.pdf_url) {
-      return res.status(404).json({
-        success: false,
-        error: 'PDF não encontrado',
-      });
-    }
-
-    // Redirecionar para URL pública do PDF
-    res.redirect(order.pdf_url);
-
-  } catch (error) {
-    console.error('Erro ao baixar PDF:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao baixar PDF',
-    });
+    const { data: order } = await supabase.from('orders').select('pdf_url').eq('id', id).single();
+    if (order?.pdf_url) res.redirect(order.pdf_url);
+    else res.status(404).send('PDF não encontrado');
+  } catch {
+    res.status(500).send('Erro');
   }
 });
 
