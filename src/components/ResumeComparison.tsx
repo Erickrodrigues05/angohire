@@ -5,12 +5,7 @@ import { ArrowLeftRight } from 'lucide-react';
 export const ResumeComparison = () => {
     const [sliderPosition, setSliderPosition] = useState(50);
 
-    const handleDrag = (e: any) => {
-        const rect = e.target.parentElement.getBoundingClientRect();
-        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-        const percentage = (x / rect.width) * 100;
-        setSliderPosition(percentage);
-    };
+
 
     return (
         <section className="py-20 bg-dark/50 overflow-hidden">

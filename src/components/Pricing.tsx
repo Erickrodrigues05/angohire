@@ -1,5 +1,5 @@
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
-import { FileText, PenTool, Send, CheckCircle2 } from "lucide-react";
+import { FileText, PenTool, CheckCircle2 } from "lucide-react";
 
 export const Pricing = () => {
     const plans = [
